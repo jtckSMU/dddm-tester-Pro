@@ -1,0 +1,6 @@
+{
+  "name": "MarketView",
+  "description": "Precision financial visualization platform for traders and investors to explore indices, stocks, crypto, futures, and forex markets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
