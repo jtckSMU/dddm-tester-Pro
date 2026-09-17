@@ -22,6 +22,34 @@ import { WatchlistDrawer } from './components/WatchlistDrawer';
 import { AuthModal } from './components/AuthModal';
 
 export default function App() {
+  // MarketView Theme state (default Light Theme)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('marketview_theme');
+    // Ensure light theme is active as requested
+    if (saved === 'dark') {
+      localStorage.setItem('marketview_theme', 'light');
+      return false;
+    }
+    return saved === 'dark';
+  });
+
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => {
+      const next = !prev;
+      localStorage.setItem('marketview_theme', next ? 'dark' : 'light');
+      return next;
+    });
+  };
+
+  // Sync dark class on html root
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
   // Navigation & Category states
   const [activeTab, setActiveTab] = useState<NavigationTab>('markets');
   const [selectedCategory, setSelectedCategory] = useState<MarketCategory>('indices');
@@ -56,6 +84,10 @@ export default function App() {
       else if (e.key === '4') setSelectedCategory('futures');
       else if (e.key === '5') setSelectedCategory('forex');
       else if (e.key === '6') setSelectedCategory('bonds');
+      else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -106,12 +138,13 @@ export default function App() {
             low24h: Math.min(target.low24h, newPrice),
             sparkline: newSparkline,
             lastUpdated: Date.now(),
+            tickDirection: pctDelta >= 0 ? 'up' : 'down'
           };
         }
 
         return newItems;
       });
-    }, 2400);
+    }, 2200);
 
     return () => clearInterval(interval);
   }, [isLiveUpdating]);
@@ -150,15 +183,18 @@ export default function App() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f7f9ff] text-[#181c21] selection:bg-[#0049db] selection:text-white">
+    <div className={`min-h-screen flex flex-col transition-colors selection:bg-[#2962ff] selection:text-white ${
+      isDarkMode ? 'dark bg-[#0b0e14] text-[#f0f3fa]' : 'bg-[#f7f9ff] text-[#181c21]'
+    }`}>
       
       {/* Top Streaming Institutional Ticker Tape */}
       <TickerTape
         items={marketItems}
         onSelectItem={(item) => setSelectedItemForChart(item)}
+        isDarkMode={isDarkMode}
       />
 
-      {/* 1. Header */}
+      {/* 1. Header with Dark Mode & Alerts */}
       <Header
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -168,32 +204,36 @@ export default function App() {
         onOpenWatchlist={() => setIsWatchlistOpen(true)}
         isLiveUpdating={isLiveUpdating}
         toggleLiveUpdating={() => setIsLiveUpdating(!isLiveUpdating)}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={toggleDarkMode}
       />
 
       {/* 2. Main Body Content */}
-      <main className="w-full pt-16 flex-1 flex flex-col">
+      <main className="w-full pt-20 flex-1 flex flex-col">
         
         {activeTab === 'markets' && (
           <div className="flex flex-col w-full animate-in fade-in duration-150">
-            {/* Hero Section with Title & Category Pills */}
+            {/* Hero Section with Title, Region Flag, Sentiment, Category Pills */}
             <HeroSection
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               selectedRegion={selectedRegion}
               onSelectRegion={setSelectedRegion}
+              isDarkMode={isDarkMode}
             />
 
-            {/* Featured Top 3 Cards Section */}
-            <section className="w-full py-4 bg-[#f7f9ff]">
+            {/* Featured Top 3 Cards Section with Interactive Scrubbers */}
+            <section className={`w-full py-5 ${isDarkMode ? 'bg-[#0b0e14]' : 'bg-[#f7f9ff]'}`}>
               <div className="max-w-[1280px] mx-auto px-4 sm:px-6">
                 <FeaturedCards
                   items={categoryItems.length >= 3 ? categoryItems : marketItems.filter(i => i.category === selectedCategory)}
                   onSelectItem={(item) => setSelectedItemForChart(item)}
+                  isDarkMode={isDarkMode}
                 />
               </div>
             </section>
 
-            {/* Market Data Table Section */}
+            {/* Market Data Table Section with Range Bars, CSV, Density & Views */}
             <MarketTable
               items={categoryItems.length > 0 ? categoryItems : marketItems.filter(i => i.category === selectedCategory)}
               category={selectedCategory}
@@ -203,6 +243,7 @@ export default function App() {
               onViewAllCategory={() => {
                 setSelectedRegion('All');
               }}
+              isDarkMode={isDarkMode}
             />
           </div>
         )}
@@ -237,6 +278,7 @@ export default function App() {
           setSelectedCategory(cat);
           setActiveTab('markets');
         }}
+        isDarkMode={isDarkMode}
       />
 
       {/* 4. Superchart Technical Analysis Modal */}
@@ -245,6 +287,7 @@ export default function App() {
         onClose={() => setSelectedItemForChart(null)}
         isFavorite={selectedItemForChart ? favorites.includes(selectedItemForChart.id) : false}
         onToggleFavorite={handleToggleFavorite}
+        isDarkMode={isDarkMode}
       />
 
       {/* 5. Symbol Search Modal (⌘K) */}
@@ -255,6 +298,7 @@ export default function App() {
         onSelectItem={(item) => setSelectedItemForChart(item)}
         favorites={favorites}
         onToggleFavorite={handleToggleFavorite}
+        isDarkMode={isDarkMode}
       />
 
       {/* 6. Watchlist Side Drawer */}
@@ -265,6 +309,7 @@ export default function App() {
         favorites={favorites}
         onSelectItem={(item) => setSelectedItemForChart(item)}
         onRemoveFavorite={(id) => handleToggleFavorite(id)}
+        isDarkMode={isDarkMode}
       />
 
       {/* 7. Authentication Modal */}

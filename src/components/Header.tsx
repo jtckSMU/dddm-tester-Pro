@@ -8,7 +8,10 @@ import {
   SlidersHorizontal,
   Bookmark,
   Bell,
-  Activity
+  Activity,
+  Moon,
+  Sun,
+  Clock
 } from 'lucide-react';
 import { NavigationTab } from '../types';
 
@@ -21,6 +24,8 @@ interface HeaderProps {
   onOpenWatchlist: () => void;
   isLiveUpdating: boolean;
   toggleLiveUpdating: () => void;
+  isDarkMode?: boolean;
+  onToggleDarkMode?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -32,9 +37,12 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenWatchlist,
   isLiveUpdating,
   toggleLiveUpdating,
+  isDarkMode = false,
+  onToggleDarkMode,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,28 +63,33 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       id="main-header"
-      className={`fixed top-0 w-full z-50 transition-all duration-200 ${
-        isScrolled 
-          ? 'bg-white/95 backdrop-blur-md border-b border-[#E0E3EB] shadow-xs' 
-          : 'bg-white/95 backdrop-blur-md border-b border-[#E0E3EB]'
+      className={`fixed top-8 w-full z-40 transition-all duration-200 ${
+        isDarkMode 
+          ? 'bg-[#11151c]/95 backdrop-blur-md border-b border-[#232936] text-white shadow-md' 
+          : 'bg-white/95 backdrop-blur-md border-b border-[#E0E3EB] text-[#181c21] shadow-2xs'
       }`}
     >
-      <div className="h-16 max-w-[1280px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4 md:gap-6">
+      <div className="h-14 max-w-[1440px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 md:gap-6">
         
         {/* Left: Brand + Search + Nav */}
-        <div className="flex items-center gap-6 lg:gap-8 flex-1">
+        <div className="flex items-center gap-4 lg:gap-6 flex-1">
           
           {/* Logo */}
           <button 
             id="brand-logo-btn"
             onClick={() => setActiveTab('markets')}
-            className="flex items-center gap-2.5 pr-4 border-r border-[#E0E3EB] focus:outline-none group text-left"
+            className="flex items-center gap-2 pr-3 border-r border-[#E0E3EB]/20 focus:outline-none group text-left cursor-pointer"
           >
-            <div className="w-8 h-8 bg-[#2962ff] rounded-sm flex items-center justify-center text-white shadow-xs group-hover:bg-[#0049db] transition-colors">
-              <TrendingUp className="w-5 h-5 stroke-[2.5]" />
+            <div className="w-7 h-7 bg-[#2962ff] rounded-md flex items-center justify-center text-white shadow-sm group-hover:bg-[#0049db] transition-colors">
+              <TrendingUp className="w-4 h-4 stroke-[2.5]" />
             </div>
-            <span className="font-bold text-[18px] text-[#181c21] tracking-tight group-hover:text-[#0049db] transition-colors">
-              MarketView
+            <span className={`font-bold text-[17px] tracking-tight transition-colors ${
+              isDarkMode ? 'text-white' : 'text-[#181c21]'
+            }`}>
+              Market<span className="text-[#2962ff]">View</span>
+            </span>
+            <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-[#2962ff]/10 text-[#2962ff] px-1.5 py-0.5 rounded border border-[#2962ff]/20">
+              PRO
             </span>
           </button>
 
@@ -84,19 +97,25 @@ export const Header: React.FC<HeaderProps> = ({
           <div 
             id="header-search-trigger"
             onClick={onOpenSearch}
-            className="hidden xl:flex flex-1 max-w-md items-center bg-[#f1f4fb] px-4 py-2 rounded-lg group focus-within:ring-2 focus-within:ring-[#2962ff]/20 hover:bg-[#ebeef5] transition-all cursor-pointer border border-transparent hover:border-[#c3c5d8]"
+            className={`hidden xl:flex flex-1 max-w-sm items-center px-3 py-1.5 rounded-xl group transition-all cursor-pointer border ${
+              isDarkMode 
+                ? 'bg-[#191f2b] border-[#293245] hover:border-[#3b4761]' 
+                : 'bg-[#f1f4fb] border-transparent hover:border-[#c3c5d8]'
+            }`}
           >
-            <Search className="w-4 h-4 text-[#434656] mr-2 shrink-0 group-hover:text-[#181c21] transition-colors" />
-            <span className="text-xs text-[#6A6D78] select-none flex-1 truncate">
-              Search markets, news and symbols...
+            <Search className="w-3.5 h-3.5 text-[#8e94a8] mr-2 shrink-0 group-hover:text-[#2962ff] transition-colors" />
+            <span className="text-xs text-[#8e94a8] select-none flex-1 truncate">
+              Search symbols, futures, macro...
             </span>
-            <kbd className="hidden 2xl:inline-block text-[10px] font-mono bg-white text-[#6A6D78] px-1.5 py-0.5 rounded border border-[#E0E3EB] shadow-2xs">
+            <kbd className={`hidden 2xl:inline-block text-[10px] font-mono px-1.5 py-0.2 rounded border shadow-2xs ${
+              isDarkMode ? 'bg-[#232936] text-[#8e94a8] border-[#364057]' : 'bg-white text-[#6A6D78] border-[#E0E3EB]'
+            }`}>
               ⌘K
             </kbd>
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-6">
+          <nav className="hidden lg:flex items-center gap-5">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               return (
@@ -104,15 +123,17 @@ export const Header: React.FC<HeaderProps> = ({
                   key={item.id}
                   id={`nav-link-${item.id}`}
                   onClick={() => setActiveTab(item.id)}
-                  className={`text-[14px] transition-colors relative py-1 ${
+                  className={`text-[13px] transition-colors relative py-1 cursor-pointer font-medium ${
                     isActive
-                      ? 'text-[#0049db] font-semibold'
-                      : 'text-[#434656] hover:text-[#181c21] font-normal'
+                      ? 'text-[#2962ff] font-bold'
+                      : isDarkMode 
+                        ? 'text-[#8e94a8] hover:text-white' 
+                        : 'text-[#434656] hover:text-[#181c21]'
                   }`}
                 >
                   {item.label}
                   {isActive && (
-                    <span className="absolute -bottom-2.5 left-0 right-0 h-[2px] bg-[#0049db] rounded-full" />
+                    <span className="absolute -bottom-1.5 left-0 right-0 h-[2px] bg-[#2962ff] rounded-full" />
                   )}
                 </button>
               );
@@ -121,132 +142,158 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5">
           
           {/* Live Feed Status Pill */}
           <button
             id="live-feed-toggle-btn"
             onClick={toggleLiveUpdating}
             title={isLiveUpdating ? "Live market ticks: Active" : "Live market ticks: Paused"}
-            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer ${
               isLiveUpdating 
-                ? 'bg-emerald-50 text-[#089981] border-emerald-200 hover:bg-emerald-100' 
-                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
+                : 'bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20'
             }`}
           >
-            <span className={`w-2 h-2 rounded-full ${isLiveUpdating ? 'bg-[#089981] animate-pulse' : 'bg-amber-500'}`} />
-            <span className="text-[11px] font-semibold">{isLiveUpdating ? 'LIVE' : 'PAUSED'}</span>
+            <span className={`w-1.5 h-1.5 rounded-full ${isLiveUpdating ? 'bg-[#089981] animate-pulse' : 'bg-amber-500'}`} />
+            <span className="text-[10px] font-mono font-bold tracking-wider">{isLiveUpdating ? 'FEED LIVE' : 'FEED PAUSED'}</span>
           </button>
+
+          {/* Theme Toggle (Dark / Light) */}
+          {onToggleDarkMode && (
+            <button
+              id="theme-toggle-btn"
+              onClick={onToggleDarkMode}
+              className={`p-2 rounded-xl transition-colors cursor-pointer border ${
+                isDarkMode 
+                  ? 'bg-[#191f2b] border-[#293245] text-amber-400 hover:bg-[#232a3a]' 
+                  : 'bg-[#f1f4fb] border-[#E0E3EB] text-[#434656] hover:text-[#181c21] hover:bg-[#e4e7f2]'
+              }`}
+              title={isDarkMode ? "Switch to daylight mode" : "Switch to Bloomberg dark mode"}
+            >
+              {isDarkMode ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            </button>
+          )}
 
           {/* Watchlist Quick Button */}
           <button
             id="header-watchlist-btn"
             onClick={onOpenWatchlist}
-            className="relative p-2 text-[#434656] hover:text-[#181c21] hover:bg-[#f1f4fb] rounded-lg transition-colors"
+            className={`relative p-2 rounded-xl border transition-colors cursor-pointer ${
+              isDarkMode 
+                ? 'bg-[#191f2b] border-[#293245] text-white hover:border-[#2962ff]' 
+                : 'bg-[#f1f4fb] border-[#E0E3EB] text-[#434656] hover:text-[#181c21] hover:bg-white'
+            }`}
             title="Your Watchlist"
           >
-            <Bookmark className="w-4 h-4" />
+            <Bookmark className="w-3.5 h-3.5" />
             {watchlistCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-[#2962ff] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#2962ff] text-white text-[9px] font-mono font-bold rounded-full flex items-center justify-center">
                 {watchlistCount}
               </span>
             )}
           </button>
 
-          {/* Search button on smaller screens */}
+          {/* Notifications Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setNotificationsOpen(!notificationsOpen)}
+              className={`p-2 rounded-xl border transition-colors cursor-pointer relative ${
+                isDarkMode 
+                  ? 'bg-[#191f2b] border-[#293245] text-white hover:border-[#2962ff]' 
+                  : 'bg-[#f1f4fb] border-[#E0E3EB] text-[#434656] hover:text-[#181c21]'
+              }`}
+              title="Market alerts and notifications"
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#089981] rounded-full"></span>
+            </button>
+
+            {notificationsOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
+                <div className={`absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl border p-3 z-50 text-left animate-in fade-in zoom-in-95 duration-150 ${
+                  isDarkMode 
+                    ? 'bg-[#151922] border-[#293245] text-white' 
+                    : 'bg-white border-[#E0E3EB] text-[#181c21]'
+                }`}>
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-black/10 dark:border-white/10">
+                    <span className="font-bold text-xs uppercase tracking-wider">Trading Alerts</span>
+                    <span className="text-[10px] text-[#089981] font-mono">Live</span>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <div className="font-bold text-emerald-500">S&P 500 (SPX) ATH Alert</div>
+                      <p className="text-[11px] opacity-80">Index crossed above 5,660 resistance target.</p>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <div className="font-bold text-blue-400">Fed Interest Rate Decision</div>
+                      <p className="text-[11px] opacity-80">FOMC announcement scheduled for 2:00 PM EST.</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Search button on mobile */}
           <button
             id="mobile-search-btn"
             onClick={onOpenSearch}
-            className="xl:hidden p-2 text-[#434656] hover:text-[#181c21] hover:bg-[#f1f4fb] rounded-lg transition-colors"
+            className="xl:hidden p-2 rounded-xl text-[#8e94a8] hover:text-white"
             title="Search"
           >
-            <Search className="w-5 h-5" />
+            <Search className="w-4 h-4" />
           </button>
 
-          {/* Sign In Button */}
+          {/* User Sign In */}
           <button
             id="header-signin-btn"
             onClick={() => onOpenAuth('signin')}
-            className="hidden md:flex text-[14px] font-medium text-[#434656] hover:text-[#181c21] px-3 py-2 transition-colors rounded-lg hover:bg-[#f1f4fb]"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#2962ff] hover:bg-[#0049db] rounded-xl transition-all shadow-xs cursor-pointer"
           >
-            Sign in
+            <User className="w-3.5 h-3.5" />
+            <span>Sign In</span>
           </button>
 
-          {/* Get Started Button */}
+          {/* Mobile Menu Button */}
           <button
-            id="header-getstarted-btn"
-            onClick={() => onOpenAuth('signup')}
-            className="bg-[#2962ff] text-white text-[14px] font-semibold px-4 py-2 rounded-lg hover:bg-[#0049db] active:scale-[0.98] transition-all shadow-xs"
-          >
-            Get started
-          </button>
-
-          {/* Profile Icon */}
-          <button
-            id="header-profile-btn"
-            onClick={() => onOpenAuth('signin')}
-            className="w-8 h-8 rounded-full bg-[#0049db] flex items-center justify-center text-white ml-1 hover:ring-2 hover:ring-[#2962ff]/30 transition-all focus:outline-none"
-            title="User Profile"
-          >
-            <User className="w-4 h-4" />
-          </button>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            id="mobile-menu-toggle-btn"
+            id="mobile-menu-toggle"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-[#434656] hover:text-[#181c21] hover:bg-[#f1f4fb] rounded-lg transition-colors ml-1"
+            className="lg:hidden p-2 text-[#8e94a8] hover:text-white rounded-lg"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
+
       </div>
 
-      {/* Mobile Dropdown Nav */}
+      {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-[#E0E3EB] px-4 py-4 space-y-2 shadow-lg">
-          <div 
-            onClick={() => { onOpenSearch(); setMobileMenuOpen(false); }}
-            className="flex items-center bg-[#f1f4fb] px-3 py-2.5 rounded-lg mb-3"
+        <div className={`lg:hidden border-t px-4 py-4 space-y-3 ${
+          isDarkMode ? 'bg-[#11151c] border-[#232936]' : 'bg-white border-[#E0E3EB]'
+        }`}>
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setActiveTab(item.id);
+                setMobileMenuOpen(false);
+              }}
+              className="block w-full text-left py-2 font-semibold text-sm"
+            >
+              {item.label}
+            </button>
+          ))}
+          <button
+            onClick={() => {
+              onOpenAuth('signin');
+              setMobileMenuOpen(false);
+            }}
+            className="w-full mt-2 py-2 bg-[#2962ff] text-white font-bold rounded-xl text-center"
           >
-            <Search className="w-4 h-4 text-[#434656] mr-2" />
-            <span className="text-xs text-[#6A6D78]">Search markets, news, symbols...</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`flex items-center justify-between px-3 py-2 text-sm rounded-lg text-left transition-colors ${
-                  activeTab === item.id 
-                    ? 'bg-[#0049db]/10 text-[#0049db] font-semibold' 
-                    : 'text-[#434656] hover:bg-[#f1f4fb]'
-                }`}
-              >
-                <span>{item.label}</span>
-                {activeTab === item.id && <span className="w-1.5 h-1.5 rounded-full bg-[#0049db]" />}
-              </button>
-            ))}
-          </div>
-
-          <div className="pt-3 border-t border-[#E0E3EB] flex items-center justify-between">
-            <button
-              onClick={() => { onOpenAuth('signin'); setMobileMenuOpen(false); }}
-              className="text-sm font-medium text-[#434656] py-2 px-3"
-            >
-              Sign in
-            </button>
-            <button
-              onClick={() => { onOpenAuth('signup'); setMobileMenuOpen(false); }}
-              className="bg-[#2962ff] text-white text-sm font-semibold px-4 py-2 rounded-lg"
-            >
-              Get started
-            </button>
-          </div>
+            Sign In / Register
+          </button>
         </div>
       )}
     </header>

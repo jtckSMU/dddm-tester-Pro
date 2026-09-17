@@ -6,7 +6,9 @@ export type ProductSubTab = 'supercharts' | 'screeners' | 'heatmaps';
 
 export type ChartTimeframe = '1D' | '5D' | '1M' | '6M' | '1Y' | 'ALL';
 
-export type ChartType = 'area' | 'line' | 'candlestick' | 'hollow_candlestick';
+export type ChartType = 'candlestick' | 'area' | 'line' | 'hollow_candlestick';
+
+export type TableViewMode = 'table' | 'grid' | 'compact';
 
 export interface PricePoint {
   time: string;
@@ -58,6 +60,7 @@ export interface MarketItem {
   sector?: string;
   isFavorite?: boolean;
   lastUpdated?: number;
+  tickDirection?: 'up' | 'down';
   bid?: number;
   ask?: number;
   bidSize?: number;
@@ -71,12 +74,6 @@ export interface PriceAlert {
   condition: 'above' | 'below';
   createdAt: string;
   triggered?: boolean;
-}
-
-export interface OrderBookEntry {
-  price: number;
-  size: number;
-  total: number;
 }
 
 export interface NewsArticle {

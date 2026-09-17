@@ -36,6 +36,7 @@ interface SuperchartModalProps {
   isFavorite: boolean;
   onToggleFavorite: (id: string, e?: React.MouseEvent) => void;
   onSetAlert?: (item: MarketItem) => void;
+  isDarkMode?: boolean;
 }
 
 type ModalTab = 'chart' | 'orderbook' | 'financials' | 'news' | 'trade';
@@ -46,6 +47,7 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
   isFavorite,
   onToggleFavorite,
   onSetAlert,
+  isDarkMode = false,
 }) => {
   const [activeTab, setActiveTab] = useState<ModalTab>('chart');
   const [timeframe, setTimeframe] = useState<ChartTimeframe>('1D');
@@ -164,36 +166,42 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
 
       <div 
         id="superchart-modal-dialog"
-        className={`relative bg-white rounded-2xl shadow-2xl border border-[#E0E3EB] z-10 flex flex-col overflow-hidden transition-all duration-200 ${
+        className={`relative rounded-2xl shadow-2xl border z-10 flex flex-col overflow-hidden transition-all duration-200 ${
+          isDarkMode 
+            ? 'bg-[#131722] border-[#2a2e39] text-[#d1d4dc]' 
+            : 'bg-white border-[#E0E3EB] text-[#181c21]'
+        } ${
           isFullscreen 
             ? 'w-full h-full rounded-none' 
             : 'w-full max-w-6xl max-h-[92vh]'
         }`}
       >
         {/* Top Header Bar */}
-        <div className="p-4 sm:px-6 bg-[#f7f9ff] border-b border-[#E0E3EB] flex flex-wrap items-center justify-between gap-4">
+        <div className={`p-4 sm:px-6 border-b flex flex-wrap items-center justify-between gap-4 ${
+          isDarkMode ? 'bg-[#181c27] border-[#2a2e39]' : 'bg-[#f7f9ff] border-[#E0E3EB]'
+        }`}>
           <div className="flex items-center gap-3">
             <div 
               className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white shadow-2xs shrink-0"
-              style={{ backgroundColor: item.badgeBgColor || '#0049db' }}
+              style={{ backgroundColor: item.badgeBgColor || '#2962ff' }}
             >
               {item.badgeText || item.symbol.slice(0, 2)}
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="font-bold text-lg text-[#181c21] tracking-tight">{item.name}</h2>
-                <span className="font-mono text-xs text-[#0049db] font-bold bg-[#dce1ff] px-2 py-0.5 rounded">
+                <h2 className={`font-bold text-lg tracking-tight ${isDarkMode ? 'text-white' : 'text-[#181c21]'}`}>{item.name}</h2>
+                <span className="font-mono text-xs text-[#2962ff] font-bold bg-[#2962ff]/15 px-2 py-0.5 rounded">
                   {item.symbol}
                 </span>
                 {item.exchange && (
-                  <span className="text-[11px] font-mono text-[#6A6D78] hidden sm:inline">
+                  <span className="text-[11px] font-mono text-[#8e94a8] hidden sm:inline">
                     {item.exchange}
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-3 text-xs">
-                <span className="font-bold text-base tabular-nums text-[#181c21]">
+                <span className={`font-bold text-base tabular-nums ${isDarkMode ? 'text-white' : 'text-[#181c21]'}`}>
                   {item.priceFormatted}
                 </span>
                 <span className={`font-semibold tabular-nums flex items-center gap-0.5 ${
@@ -207,11 +215,15 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
           </div>
 
           {/* Navigation Subtabs (Chart, Depth, Financials, News, Trade) */}
-          <div className="flex bg-white p-1 rounded-xl border border-[#E0E3EB] text-xs">
+          <div className={`flex p-1 rounded-xl border text-xs ${
+            isDarkMode ? 'bg-[#131722] border-[#2a2e39]' : 'bg-white border-[#E0E3EB]'
+          }`}>
             <button
               onClick={() => setActiveTab('chart')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'chart' ? 'bg-[#0049db] text-white shadow-2xs' : 'text-[#434656] hover:bg-[#f1f4fb]'
+                activeTab === 'chart' 
+                  ? 'bg-[#2962ff] text-white shadow-2xs' 
+                  : isDarkMode ? 'text-[#8e94a8] hover:text-white' : 'text-[#434656] hover:bg-[#f1f4fb]'
               }`}
             >
               <BarChart2 className="w-3.5 h-3.5" />
@@ -220,7 +232,9 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
             <button
               onClick={() => setActiveTab('orderbook')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'orderbook' ? 'bg-[#0049db] text-white shadow-2xs' : 'text-[#434656] hover:bg-[#f1f4fb]'
+                activeTab === 'orderbook' 
+                  ? 'bg-[#2962ff] text-white shadow-2xs' 
+                  : isDarkMode ? 'text-[#8e94a8] hover:text-white' : 'text-[#434656] hover:bg-[#f1f4fb]'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -229,7 +243,9 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
             <button
               onClick={() => setActiveTab('financials')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'financials' ? 'bg-[#0049db] text-white shadow-2xs' : 'text-[#434656] hover:bg-[#f1f4fb]'
+                activeTab === 'financials' 
+                  ? 'bg-[#2962ff] text-white shadow-2xs' 
+                  : isDarkMode ? 'text-[#8e94a8] hover:text-white' : 'text-[#434656] hover:bg-[#f1f4fb]'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
@@ -238,7 +254,9 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
             <button
               onClick={() => setActiveTab('news')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'news' ? 'bg-[#0049db] text-white shadow-2xs' : 'text-[#434656] hover:bg-[#f1f4fb]'
+                activeTab === 'news' 
+                  ? 'bg-[#2962ff] text-white shadow-2xs' 
+                  : isDarkMode ? 'text-[#8e94a8] hover:text-white' : 'text-[#434656] hover:bg-[#f1f4fb]'
               }`}
             >
               <FileText className="w-3.5 h-3.5" />
@@ -247,7 +265,9 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
             <button
               onClick={() => setActiveTab('trade')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition-colors flex items-center gap-1.5 ${
-                activeTab === 'trade' ? 'bg-[#089981] text-white shadow-2xs' : 'text-[#089981] bg-emerald-50 hover:bg-emerald-100'
+                activeTab === 'trade' 
+                  ? 'bg-[#089981] text-white shadow-2xs' 
+                  : 'text-[#089981] bg-emerald-500/10 hover:bg-emerald-500/20'
               }`}
             >
               <TrendingUp className="w-3.5 h-3.5" />
@@ -259,21 +279,27 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
           <div className="flex items-center gap-1">
             <button
               onClick={(e) => onToggleFavorite(item.id, e)}
-              className="p-2 text-[#6A6D78] hover:text-amber-500 rounded-lg hover:bg-[#ebeef5] transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode ? 'text-[#8e94a8] hover:text-amber-400 hover:bg-[#2a2e39]' : 'text-[#6A6D78] hover:text-amber-500 hover:bg-[#ebeef5]'
+              }`}
               title="Toggle Favorite"
             >
               <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-400 text-amber-500' : ''}`} />
             </button>
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
-              className="p-2 text-[#6A6D78] hover:text-[#181c21] rounded-lg hover:bg-[#ebeef5] transition-colors hidden sm:block"
+              className={`p-2 rounded-lg transition-colors hidden sm:block ${
+                isDarkMode ? 'text-[#8e94a8] hover:text-white hover:bg-[#2a2e39]' : 'text-[#6A6D78] hover:text-[#181c21] hover:bg-[#ebeef5]'
+              }`}
               title="Toggle Fullscreen"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-[#6A6D78] hover:text-[#181c21] rounded-lg hover:bg-[#ebeef5] transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                isDarkMode ? 'text-[#8e94a8] hover:text-white hover:bg-[#2a2e39]' : 'text-[#6A6D78] hover:text-[#181c21] hover:bg-[#ebeef5]'
+              }`}
             >
               <X className="w-5 h-5" />
             </button>
@@ -281,7 +307,9 @@ export const SuperchartModal: React.FC<SuperchartModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
+        <div className={`flex-1 overflow-y-auto p-4 sm:p-6 ${
+          isDarkMode ? 'bg-[#131722]' : 'bg-white'
+        }`}>
           
           {/* TAB 1: SUPERCHART */}
           {activeTab === 'chart' && (
